@@ -7,9 +7,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Camera;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -64,7 +66,6 @@ public class Practice14FlipboardView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         int bitmapWidth = bitmap.getWidth();
         int bitmapHeight = bitmap.getHeight();
         int centerX = getWidth() / 2;
@@ -72,16 +73,34 @@ public class Practice14FlipboardView extends View {
         int x = centerX - bitmapWidth / 2;
         int y = centerY - bitmapHeight / 2;
 
+        //1. 画右部分
         canvas.save();
+        canvas.clipRect(x+bitmapWidth / 2, y, x+bitmapWidth, y+bitmapHeight);
+        canvas.drawBitmap(bitmap, x, y, paint);
+        canvas.restore();
+
+        //2. 画左部分
+        canvas.save();
+        if (degree < 90) {
+            canvas.clipRect(x, y, x + bitmapWidth/2, y+bitmapHeight);
+        } else {
+            canvas.clipRect(x + bitmapWidth/2, y, x + bitmapWidth, y+bitmapHeight);
+        }
 
         camera.save();
-        camera.rotateX(degree);
+        camera.rotateY(degree);
         canvas.translate(centerX, centerY);
         camera.applyToCanvas(canvas);
         canvas.translate(-centerX, -centerY);
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        float newZ = - displayMetrics.density * 6;
+        camera.setLocation(0, 0, newZ);
         camera.restore();
 
         canvas.drawBitmap(bitmap, x, y, paint);
+        paint.setColor(Color.RED);
         canvas.restore();
+        paint.setTextSize(30);
+        canvas.drawText(degree+"", 100, 100, paint);
     }
 }
